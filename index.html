@@ -1,0 +1,291 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>jesmSn</title>
+<style>
+*{
+	margin:0;
+	padding:0;
+}
+html, body{
+	height:100%;
+	width:100%;
+	font-family:Verdana, Geneva, sans-serif;
+}
+html{
+	display:table;
+}
+body{
+	display:table-cell;
+	vertical-align:middle;
+	width:970px;
+	margin:auto;
+}
+.b{
+	border-radius:5px;
+	width:10px;
+	height:10px;
+}
+.i{
+	display:none;
+}
+#inst{
+	float:left;
+	width:150px;
+	padding:10px;
+	background-color:#3F0;
+	margin-left:70px;
+}
+#main{
+	width:500px;
+	height:400px;
+	margin:auto;
+	border:3px groove #6FC;
+	background-color:#000;
+}
+#main div{
+	position:absolute;
+}
+#menu{
+	height:400px;
+	width:500px;
+	background-color:#FFF;
+}
+#menu form{
+	width:400px;
+	text-align:center;
+	margin:auto;
+}
+form p{
+	margin:10px 0;
+}
+#pause{
+	background-color:rgba(0, 0, 0, .5);
+	color:#FFF;
+	margin:10px;
+	border-radius:5px;
+	padding:5px;
+	position:fixed;
+	top:0;
+	left:0;
+	display:none;
+}
+</style>
+<script src="jesm2.1.js"></script>
+<script>
+var tela, cobra;
+
+function criaObj(){
+	tela={
+		passo:null,
+		ult_tecla:2,
+		pontos:0,
+		meteint:null,
+		geraPonto:geraPonto,
+		ult_ponto:null,
+		px_larg:10,
+		pause:false
+	};
+	
+	cobra={
+		addPonto:addPonto,
+		move:moveCobra,
+		teste:testeCobra,
+		come:comeCobra,
+		c:[],
+		direcoes:[],
+		cor:true
+	};
+}
+
+function startGame(nivel){
+	criaObj();
+	tela.elemento=document.getElementById("main");
+	tela.elemento.innerHTML="";
+	tela.passo=Number(nivel);
+	for(x=6;--x>-1;cobra.addPonto(x*tela.px_larg, 200)); 
+	for(x=-1;++x<6;cobra.direcoes[x]=2);
+	cobra.c[0].style.backgroundColor="red";
+	cobra.c[0].style.zIndex="1";
+	tela.geraPonto();
+	tela.meteint=setInterval(verificar, tela.passo);
+}
+
+function moveCobra(){
+	for(var c=this.c, x=c.length, len=c.length, di=this.direcoes;--x>=0;movePixel(c[x], di[x]));
+}
+
+function testeCobra(){
+	var ret=false, _x=this.c[0].style.marginLeft, _y=this.c[0].style.marginTop;
+	for(var y=4;y<this.c.length;y++)
+		if(_x==this.c[y].style.marginLeft&&_y==this.c[y].style.marginTop){
+			ret=true;
+			break;
+		}
+	if(_x=="-10px"||_y=="-10px"||_x=="500px"||_y=="400px")
+			ret=true;
+	return ret;
+}
+
+function movePixel(p, d){
+	switch(d){
+		case 1:p.style.marginTop=parseInt(p.style.marginTop, 10)-tela.px_larg+"px";
+		break;
+		case 2:p.style.marginLeft=parseInt(p.style.marginLeft, 10)+tela.px_larg+"px";
+		break;
+		case 3:p.style.marginTop=parseInt(p.style.marginTop, 10)+tela.px_larg+"px";
+		break;
+		case 4:p.style.marginLeft=parseInt(p.style.marginLeft, 10)-tela.px_larg+"px";
+		break;
+	}
+}
+
+function geraPonto(){
+	var ponto=document.createElement("div"), x, y;
+	ponto.className='b';
+	ponto.id=(++tela.pontos).toString();
+	do{
+		x=Math.floor(Math.random()*(50-1));
+		y=Math.floor(Math.random()*(40-1));
+	}
+	while(existePixel(x, y));
+	ponto.style.marginLeft=x*tela.px_larg+"px";
+	ponto.style.marginTop=y*tela.px_larg+"px";
+	ponto.style.backgroundColor="white";
+	tela.ult_ponto=ponto.id;
+	botaPisca(ponto);
+	this.elemento.appendChild(ponto);
+}
+
+function existePixel(x, y){
+	var ret=false, px=document.pega('.','b');
+	for(w=0;w<px.length;w++)
+		if(parseInt(px[w].style.marginLeft, 10)==x&&parseInt(px[w].style.marginTop, 10)==y){
+			ret=true;
+			break;
+		}
+	return ret;
+}
+
+function addPonto(x, y){
+	var ponto=document.createElement("div");
+	ponto.className='b';
+	ponto.id=(++tela.pontos).toString();
+	ponto.style.marginLeft=x+"px";
+	ponto.style.marginTop=y+"px";
+	ponto.style.backgroundColor=(cobra.cor=!cobra.cor)?"green":"yellow";
+	tela.elemento.appendChild(ponto);
+	this.c.push(ponto);
+}
+
+function botaPisca(el){
+	el.pisca=setInterval(function(){
+		el.style.visibility=el.style.visibility=="hidden"?"visible":"hidden";
+	}
+	, 300);
+}
+
+function comeCobra(){
+	var temp=[this.c[0].style.marginLeft, this.c[0].style.marginTop], ponto_atual=document.pega('#', tela.ult_ponto), ret=true;
+	movePixel(this.c[0], cobra.direcoes[0]);
+	if(ponto_atual.style.marginLeft==this.c[0].style.marginLeft&&ponto_atual.style.marginTop==this.c[0].style.marginTop){
+		ret=false;
+		var t=this.c.length-1;
+		temp=[this.c[t].style.marginLeft, this.c[t].style.marginTop];
+		for(var x=1;x<this.c.length;x++){
+			movePixel(this.c[x], this.direcoes[x]);
+		}
+		cobra.addPonto(parseInt(temp[0],10),parseInt(temp[1],10));
+		clearInterval(document.pega('#', tela.ult_ponto).pisca);
+		j('#'+tela.ult_ponto).className='i';
+		tela.geraPonto();
+	}
+	else{
+		this.c[0].style.marginLeft=temp[0];
+		this.c[0].style.marginTop=temp[1];
+	}
+	return ret;
+}
+
+function verificar(){
+	cobra.direcoes.unshift(tela.ult_tecla);
+	if(cobra.come())
+		cobra.move();
+	if(cobra.teste())
+		endGame();
+}
+
+function endGame(){
+	clearInterval(tela.meteint);
+	for(x=-1;++x<cobra.c.length;botaPisca(cobra.c[x]));
+	setTimeout(function(){
+		if(confirm("Sua cobra teve o total de "+cobra.c.length+" pontos, parabéns! Deseja jogar novamente?"))
+			rePlay();
+	}, 2500);
+}
+
+function rePlay(){
+	tela.elemento.innerHTML=j("#g").innerHTML;
+	criaObj();
+}
+
+document.onkeydown=function(e){
+	var ev=e||window.event;
+	var tecla=ev.keyCode||ev.which;
+	if(tecla==27){
+		tela.pause=!tela.pause;
+		if(tela.pause){
+			clearInterval(tela.meteint);
+			j("#pause").style.display="block";
+		}
+		else{
+			tela.meteint=setInterval(verificar, tela.passo);
+			j("#pause").style.display="none";
+		}
+	}
+	else{
+		switch(tecla){
+			case 38: if(cobra.direcoes[0]!=3)tela.ult_tecla=1;
+			break;
+			case 39: if(cobra.direcoes[0]!=4)tela.ult_tecla=2;
+			break;
+			case 40: if(cobra.direcoes[0]!=1)tela.ult_tecla=3;
+			break;
+			case 37: if(cobra.direcoes[0]!=2)tela.ult_tecla=4;
+			break;
+		}
+	}
+}
+</script>
+</head>
+
+<body>
+<span id="pause">Pausado</span>
+<div id="inst">
+	Para movimentar, use as setas:<br />
+    <img alt="setas" /><br />
+    Para pausar, use ESC:<br />
+    <img alt="esc" />
+</div>
+<div id="recordes"></div>
+<div id="main"></div>
+<div id="g" style="display:none;">
+	<div id="menu">
+		<form onsubmit="startGame(document.pega('<>','select', 0).value);return false;">
+			<p>Selecione a dificuldade:</p>
+			<p><select>
+					<option value="100">Easy</option>
+					<option value="50">Medium</option>
+					<option value="30">Hard</option>
+				</select>
+			</p>
+            <p><input type="submit" value="Jogar!" /></p>
+		</form>
+	</div>
+</div>
+   <script>   
+	j("#main").innerHTML=j("#g").innerHTML;
+   </script>
+</body>
+</html>
