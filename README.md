@@ -2,4 +2,4 @@
 
 Unfinished snake game.
 
-[Play it!](http://jszablevski.github.io/JesmSn/index.html)
+[Play it!](http://jesm.github.io/JesmSn/index.html)
